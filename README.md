@@ -4,4 +4,4 @@ use http://phantomjs.org/ to grab the content of http://www.apple.com/tw/shop/br
 
 ref Doc: https://docs.google.com/document/d/1pFFM-LHSgi4jGOAhXBuQTQYbAOke7I_XprGhSRzAi7c/edit?usp=sharing
 
-Try Quip https://quip.com/
+x Try Quip https://quip.com/, 只有簡體版
