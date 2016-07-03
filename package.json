@@ -1,0 +1,24 @@
+{
+  "name": "applecrawler",
+  "version": "1.0.0",
+  "description": "use http://phantomjs.org/ to grab the content of http://www.apple.com/tw/shop/browse/home/specialdeals/mac",
+  "main": "index.js",
+  "dependencies": {
+    "nightmare": "^2.5.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grimmer0125/appleCrawler.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/grimmer0125/appleCrawler/issues"
+  },
+  "homepage": "https://github.com/grimmer0125/appleCrawler#readme"
+}
