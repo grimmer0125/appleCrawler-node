@@ -1,8 +1,8 @@
 {
   "name": "applecrawler",
   "version": "1.0.0",
-  "description": "use http://phantomjs.org/ to grab the content of http://www.apple.com/tw/shop/browse/home/specialdeals/mac",
-  "main": "index.js",
+  "description": "use https://github.com/segmentio/nightmare to grab the content of http://www.apple.com/tw/shop/browse/home/specialdeals/mac, then use Line/Messenger to broadcast the information",
+  "main": "server.js",
   "dependencies": {
     "nightmare": "^2.5.2"
   },
