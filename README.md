@@ -4,4 +4,9 @@ use http://phantomjs.org/ to grab the content of http://www.apple.com/tw/shop/br
 
 ref Doc: https://docs.google.com/document/d/1pFFM-LHSgi4jGOAhXBuQTQYbAOke7I_XprGhSRzAi7c/edit?usp=sharing
 
-x Try Quip https://quip.com/, 只有簡體版
+# Steps for development:
+
+1. (optional) Install the latest version of node.js from https://nodejs.org/en/
+2. Go to the project root foldler.
+3. Install npm dependencies. Run :"npm install".
+4. Run "npm start".
