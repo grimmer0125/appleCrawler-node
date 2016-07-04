@@ -16,7 +16,7 @@ app.set('port', (process.env.PORT || 5000));
 app.use(bodyParser.urlencoded({ extended: false, limit: 2 * 1024 * 1024 }));
 app.use(bodyParser.json({ limit: 2 * 1024 * 1024 }));
 
-app.post('/', function (req, res) {
+app.post('/callback', function (req, res) {
   console.log(req.body.result);
 
   var receives = client.createReceivesFromJSON(req.body);
