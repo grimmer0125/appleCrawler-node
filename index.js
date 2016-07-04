@@ -1,3 +1,5 @@
+"use strict";
+
 require('newrelic');
 var equal = require('deep-equal');
 var Nightmare = require('nightmare');
