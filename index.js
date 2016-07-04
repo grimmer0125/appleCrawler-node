@@ -13,21 +13,25 @@ var client = LineBot.client({
   channelMID: 'u21e6de33e562aaa212082702d3957721'
 });
 
-var nameList = ['jhon','fill','vikash','jammy','tumblr','kamal'];
-console.log(nameList.indexOf( 'kamal' )); // Print 5
+// var nameList = ['jhon','fill','vikash','jammy','tumblr','kamal'];
+// console.log(nameList.indexOf( 'kamal' )); // Print 5
 
 const midList = [];
 var macs = [];
 
+// console.log('broadcast to:'+'userMid;' + JSON.stringify(nameList));
+
 function broadcastUpdatedInfo(){
   const macInfoString = JSON.stringify(macs);
   for (const userMid of midList){
+    console.log('broadcast to:'+ userMid +";info:"+macInfoString);
     client.sendText(userMid, macInfoString);
   }
 }
 
 function sendBackMacInfoWhenAddingFriend(userMid){
   const macInfoString = JSON.stringify(macs);
+  console.log('send back to:'+ userMid +";info:"+macInfoString);
   client.sendText(userMid, macInfoString);
 }
 
@@ -67,6 +71,7 @@ app.post('/callback', function (req, res) {
               console.error(err);
             });
         } else {
+          console.log('echo:'+ clientMid + ";content:"+receive.getText());
           client.sendText(receive.getFromMid(), receive.getText());
         }
 
@@ -108,6 +113,9 @@ app.post('/callback', function (req, res) {
       }else{
         console.error('found unknown message type');
       }
+
+      sendBackMacInfoWhenAddingFriend(clientMid);
+
     }else if(receive.isOperation()){
 
       console.log('found operation');

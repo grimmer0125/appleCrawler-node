@@ -10,11 +10,11 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: ['My Application'],
+  app_name: ['appleJuice'],
   /**
    * Your New Relic license key.
    */
-  license_key: process.env.NEW_RELIC_LICENSE_KEY,
+  license_key: 'b18ea583b67bf46258beb2255ead6c31a2f48018',
   logging: {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
