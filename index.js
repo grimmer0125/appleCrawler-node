@@ -1,3 +1,6 @@
+var equal = require('deep-equal');
+var Nightmare = require('nightmare');
+
 var _ = require('lodash');
 var bodyParser = require('body-parser');
 var express = require('express');
@@ -8,6 +11,8 @@ var client = LineBot.client({
   channelSecret: 'ef0e7b0d4396b8a410ee0a04a5bdbf9d',
   channelMID: 'u21e6de33e562aaa212082702d3957721'
 });
+
+const midList = [];
 
 var app = express();
 
@@ -99,4 +104,98 @@ app.post('/callback', function (req, res) {
 
 app.listen(app.get('port'), function () {
   console.log('Listening on port ' + app.get('port'));
+});
+
+// crawler part
+let nightmare = Nightmare({
+  openDevTools: true,
+  show: true
+});
+
+
+// node is node scope
+var macs = [];
+
+debugger;
+
+// below is windows scope?
+function grabAppleData(){
+  nightmare
+    .goto('http://www.apple.com/tw/shop/browse/home/specialdeals/mac')
+    .wait('.refurb-list')
+    .evaluate(function () {
+
+      const newMacs = [];
+
+      let tables = document.querySelectorAll(".refurb-list .box-content table");
+      for (const table of tables){
+        const firstRow = table.querySelector(".product");
+
+        const imageColumn = firstRow.querySelector(".image img");
+        const imageSrc = imageColumn.src;
+
+        const specsTotalColumn = firstRow.querySelector(".specs"); //how to remove title part ?
+        const specsTotalDesc = specsTotalColumn.innerText;
+        // const specsTitleColumn = firstRow.querySelector(".specs a");
+        // const specsTitle = specsTitleColumn .innerText;
+
+        const purchaseInfoColumn = firstRow.querySelector(".purchase-info .price"); //multiple span?
+        const price = purchaseInfoColumn.innerText;
+
+        const mac = {imageURL:imageSrc, specs:specsTotalDesc, price};
+
+        newMacs.push(mac);
+      }
+
+      // here is in brwoser/window scope, can not access macs
+
+      return newMacs;
+
+    })
+    // .end()
+    .then(function (result) {
+
+
+      // debugger;
+      // if(JSON.stringify(newMacs) === JSON.stringify(newMacs)){
+      if(equal(result, macs)){
+        console.log('same macs');
+      }else {
+        console.log('old macs:', macs)
+
+        console.log('not the same, new macs:',result);
+
+        macs = result;
+        //broadcast by line id
+
+      }
+
+      // console.log('new macs:',result)
+
+    })
+    .catch(function (error) {
+      console.error('Search failed:', error);
+    });
+}
+
+grabAppleData();
+
+setInterval(function(){
+  console.log('start');
+
+  grabAppleData();
+
+  // test2後的下一次出現test1 等超過10s !!!, even if interval = 5*1000
+  // var seconds = 10;
+  // var waitTill = new Date(new Date().getTime() + seconds * 1000);
+  // while(waitTill > new Date())
+  // {
+  //
+  // }
+
+  console.log('end');
+}, 15 * 60* 1000); //15 min
+
+process.on('SIGINT', function() {
+  process.exit();
 });

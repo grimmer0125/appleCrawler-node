@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "deep-equal": "^1.0.1",
     "ejs": "^2.4.2",
     "express": "^4.14.0",
     "line-bot-sdk": "^0.1.4",
