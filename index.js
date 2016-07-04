@@ -145,7 +145,7 @@ app.listen(app.get('port'), function () {
 
 // below is crawler part
 var nightmare = Nightmare({
-  openDevTools: true,
+  openDevTools: false,
   // show: true
 });
 
