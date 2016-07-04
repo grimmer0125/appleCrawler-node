@@ -142,7 +142,7 @@ app.listen(app.get('port'), function () {
 });
 
 // below is crawler part
-let nightmare = Nightmare({
+var nightmare = Nightmare({
   openDevTools: true,
   // show: true
 });
