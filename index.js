@@ -219,7 +219,7 @@ setInterval(function(){
   // }
 
   console.log('end');
-}, 15 * 60* 1000); //15 min
+}, 15 * 1000); //15 min
 
 process.on('SIGINT', function() {
   process.exit();
