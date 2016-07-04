@@ -22,6 +22,8 @@ app.post('/callback', function (req, res) {
   var receives = client.createReceivesFromJSON(req.body);
   _.each(receives, function(receive){
 
+    console.log('remote user:', receive.getFromMid());
+
     if(receive.isMessage()){
 
       if(receive.isText()){
