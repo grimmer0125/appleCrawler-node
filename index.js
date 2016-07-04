@@ -145,8 +145,8 @@ app.listen(app.get('port'), function () {
 
 // below is crawler part
 var nightmare = Nightmare({
-  openDevTools: false,
-  // show: true
+  // openDevTools: false,
+  show: true
 });
 
 function grabAppleData(){
