@@ -2,13 +2,19 @@
   "name": "applecrawler",
   "version": "1.0.0",
   "description": "use https://github.com/segmentio/nightmare to grab the content of http://www.apple.com/tw/shop/browse/home/specialdeals/mac, then use Line/Messenger to broadcast the information",
-  "main": "server.js",
+  "main": "index.js",
   "dependencies": {
-    "nightmare": "^2.5.2"
+    "body-parser": "^1.15.2",
+    "ejs": "^2.4.2",
+    "express": "^4.14.0",
+    "line-bot-sdk": "^0.1.4",
+    "lodash": "^4.13.1",
+    "nightmare": "^2.5.2",
+    "superagent": "^2.0.0"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node server.js",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
