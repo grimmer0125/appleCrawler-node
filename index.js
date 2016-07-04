@@ -12,7 +12,23 @@ var client = LineBot.client({
   channelMID: 'u21e6de33e562aaa212082702d3957721'
 });
 
+var nameList = ['jhon','fill','vikash','jammy','tumblr','kamal'];
+console.log(nameList.indexOf( 'kamal' )); // Print 5
+
 const midList = [];
+var macs = [];
+
+function broadcastUpdatedInfo(){
+  const macInfoString = JSON.stringify(macs);
+  for (const userMid of midList){
+    client.sendText(userMid, macInfoString);
+  }
+}
+
+function sendBackMacInfoWhenAddingFriend(userMid){
+  const macInfoString = JSON.stringify(macs);
+  client.sendText(userMid, macInfoString);
+}
 
 var app = express();
 
@@ -27,7 +43,11 @@ app.post('/callback', function (req, res) {
   var receives = client.createReceivesFromJSON(req.body);
   _.each(receives, function(receive){
 
-    console.log('remote user:', receive.getFromMid());
+    const clientMid = receive.getFromMid();
+    console.log('remote user:', clientMid);
+    if( midList.indexOf(clientMid) < 0 ){
+      midList.push(clientMid);
+    }
 
     if(receive.isMessage()){
 
@@ -91,6 +111,12 @@ app.post('/callback', function (req, res) {
 
       console.log('found operation');
 
+      // until 20160705, https://developers.line.me/bot-api/api-reference#receiving_operations
+      // shows that there are 3 cases, add as a friend, block, canceling block,
+
+      // for add as a friend case. should handle excluding the other cases later.
+      sendBackMacInfoWhenAddingFriend(clientMid);
+
     }else {
 
       console.error('invalid receive type');
@@ -106,19 +132,12 @@ app.listen(app.get('port'), function () {
   console.log('Listening on port ' + app.get('port'));
 });
 
-// crawler part
+// below is crawler part
 let nightmare = Nightmare({
   openDevTools: true,
-  show: true
+  // show: true
 });
 
-
-// node is node scope
-var macs = [];
-
-debugger;
-
-// below is windows scope?
 function grabAppleData(){
   nightmare
     .goto('http://www.apple.com/tw/shop/browse/home/specialdeals/mac')
@@ -155,9 +174,6 @@ function grabAppleData(){
     // .end()
     .then(function (result) {
 
-
-      // debugger;
-      // if(JSON.stringify(newMacs) === JSON.stringify(newMacs)){
       if(equal(result, macs)){
         console.log('same macs');
       }else {
@@ -166,12 +182,10 @@ function grabAppleData(){
         console.log('not the same, new macs:',result);
 
         macs = result;
+
         //broadcast by line id
-
+        broadcastUpdatedInfo();
       }
-
-      // console.log('new macs:',result)
-
     })
     .catch(function (error) {
       console.error('Search failed:', error);
