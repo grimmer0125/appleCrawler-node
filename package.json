@@ -8,13 +8,14 @@
   "main": "index.js",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "cheerio": "^0.20.0",
     "deep-equal": "^1.0.1",
     "ejs": "^2.4.2",
     "express": "^4.14.0",
     "line-bot-sdk": "^0.1.4",
     "lodash": "^4.13.1",
     "newrelic": "^1.28.1",
-    "nightmare": "^2.5.2",
+    "request": "^2.72.0",
     "superagent": "^2.0.0"
   },
   "devDependencies": {},

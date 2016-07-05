@@ -2,12 +2,14 @@
 
 require('newrelic');
 var equal = require('deep-equal');
-var Nightmare = require('nightmare');
+// var Nightmare = require('nightmare');
+var cheerio = require('cheerio');
+var request = require('request');
 
 var _ = require('lodash');
 var bodyParser = require('body-parser');
 var express = require('express');
-var request = require('superagent');
+// var request = require('superagent');
 var LineBot = require('line-bot-sdk');
 var client = LineBot.client({
   channelID: '1472984528',
@@ -15,12 +17,31 @@ var client = LineBot.client({
   channelMID: 'u21e6de33e562aaa212082702d3957721'
 });
 
+// let ttt = '      fdasfljas    ';
+// ttt = ttt.trim();
+// console.log('ttt:',ttt);
+
 // var nameList = ['jhon','fill','vikash','jammy','tumblr','kamal'];
 // console.log(nameList.indexOf( 'kamal' )); // Print 5
 
 const midList = [];
 var macs = [];
 
+function compareWithOldMacs(newMacs){
+
+  if(equal(newMacs, macs)){
+    console.log('same macs');
+  }else {
+    console.log('old macs:', macs)
+
+    console.log('not the same, new macs:', JSON.stringify(newMacs));
+
+    macs = newMacs;
+
+    //broadcast by line id
+    broadcastUpdatedInfo();
+  }
+}
 // console.log('broadcast to:'+'userMid;' + JSON.stringify(nameList));
 
 function broadcastUpdatedInfo(){
@@ -116,6 +137,7 @@ app.post('/callback', function (req, res) {
         console.error('found unknown message type');
       }
 
+      // Todo: will change here
       sendBackMacInfoWhenAddingFriend(clientMid);
 
     }else if(receive.isOperation()){
@@ -144,71 +166,73 @@ app.listen(app.get('port'), function () {
 });
 
 // below is crawler part
-var nightmare = Nightmare({
-  // openDevTools: false,
-  show: true
-});
+// var nightmare = Nightmare({
+//   // openDevTools: false,
+//   // show: true
+// });
+//
+// function grabAppleData(){
+//   nightmare
+//     .goto('http://www.apple.com/tw/shop/browse/home/specialdeals/mac')
+//     .wait('.refurb-list')
+//     .evaluate(function () {
+//
+//       const newMacs = [];
+//
+//       let tables = document.querySelectorAll(".refurb-list .box-content table");
+//       for (const table of tables){
+//         const firstRow = table.querySelector(".product");
+//
+//         const imageColumn = firstRow.querySelector(".image img");
+//         const imageSrc = imageColumn.src;
+//
+//         const specsTotalColumn = firstRow.querySelector(".specs"); //how to remove title part ?
+//         const specsTotalDesc = specsTotalColumn.innerText;
+//         // const specsTitleColumn = firstRow.querySelector(".specs a");
+//         // const specsTitle = specsTitleColumn .innerText;
+//
+//         const purchaseInfoColumn = firstRow.querySelector(".purchase-info .price"); //multiple span?
+//         const price = purchaseInfoColumn.innerText;
+//
+//         const mac = {imageURL:imageSrc, specs:specsTotalDesc, price};
+//
+//         newMacs.push(mac);
+//       }
+//
+//       // here is in brwoser/window scope, can not access macs
+//
+//       return newMacs;
+//
+//     })
+//     // .end()
+//     .then(function (result) {
+//
+//       compareWithOldMacs(result);
+//
+//       // if(equal(result, macs)){
+//       //   console.log('same macs');
+//       // }else {
+//       //   console.log('old macs:', macs)
+//       //
+//       //   console.log('not the same, new macs:',result);
+//       //
+//       //   macs = result;
+//       //
+//       //   //broadcast by line id
+//       //   broadcastUpdatedInfo();
+//       // }
+//     })
+//     .catch(function (error) {
+//       console.error('Search failed:', error);
+//     });
+// }
 
-function grabAppleData(){
-  nightmare
-    .goto('http://www.apple.com/tw/shop/browse/home/specialdeals/mac')
-    .wait('.refurb-list')
-    .evaluate(function () {
-
-      const newMacs = [];
-
-      let tables = document.querySelectorAll(".refurb-list .box-content table");
-      for (const table of tables){
-        const firstRow = table.querySelector(".product");
-
-        const imageColumn = firstRow.querySelector(".image img");
-        const imageSrc = imageColumn.src;
-
-        const specsTotalColumn = firstRow.querySelector(".specs"); //how to remove title part ?
-        const specsTotalDesc = specsTotalColumn.innerText;
-        // const specsTitleColumn = firstRow.querySelector(".specs a");
-        // const specsTitle = specsTitleColumn .innerText;
-
-        const purchaseInfoColumn = firstRow.querySelector(".purchase-info .price"); //multiple span?
-        const price = purchaseInfoColumn.innerText;
-
-        const mac = {imageURL:imageSrc, specs:specsTotalDesc, price};
-
-        newMacs.push(mac);
-      }
-
-      // here is in brwoser/window scope, can not access macs
-
-      return newMacs;
-
-    })
-    // .end()
-    .then(function (result) {
-
-      if(equal(result, macs)){
-        console.log('same macs');
-      }else {
-        console.log('old macs:', macs)
-
-        console.log('not the same, new macs:',result);
-
-        macs = result;
-
-        //broadcast by line id
-        broadcastUpdatedInfo();
-      }
-    })
-    .catch(function (error) {
-      console.error('Search failed:', error);
-    });
-}
-
-grabAppleData();
+grabAppleData2();
 
 setInterval(function(){
   console.log('start');
 
-  grabAppleData();
+  grabAppleData2();
 
   // test2後的下一次出現test1 等超過10s !!!, even if interval = 5*1000
   // var seconds = 10;
@@ -219,8 +243,97 @@ setInterval(function(){
   // }
 
   console.log('end');
-}, 15 * 1000); //15 min
+}, 12 * 60* 1000); //15 min
 
 process.on('SIGINT', function() {
   process.exit();
 });
+
+function grabAppleData2(){
+
+  request({
+      method: 'GET',
+      url: 'http://www.apple.com/tw/shop/browse/home/specialdeals/mac'
+  }, function(err, response, body) {
+      if (err) return console.error(err);
+
+      // console.log('use cheerio 000 !!');
+
+      // Tell Cherrio to load the HTML
+      // $ = cheerio.load(body);
+
+      var $ = cheerio.load(body);
+
+      // console.log('use cheerio !!');
+
+      const newMacs = [];
+
+      $('.refurb-list .box-content table').each(function(i, elem) {
+
+        // use this or elem to get this element, shoulbe be table object
+        // console.log('get something');
+
+        const firstRow = $(this).find('.product');
+
+        // var firstRow = elem('.product');
+        const imageColumn = firstRow.find(".image img");
+        const imageSrc = imageColumn.attr('src');
+        // var imageSrc2 = imageColumn.data('src');
+        // console.log('image1:',imageSrc);
+        // console.log('image2:',imageSrc2);
+
+        const specsTitleColumn = firstRow.find(".specs h3");
+        let specsTitleDesc = specsTitleColumn.text();
+        specsTitleDesc  = specsTitleDesc.trim();
+        // console.log('title desc:' + specsTitleDesc+";end;");
+        // specsTotalDesc = specsTotalDesc.trim();
+        // console.log('desc2:'+specsTotalDesc+";end;");
+
+        const specsTotalColumn = firstRow.find(".specs");
+        let specsTotalDesc = specsTotalColumn.text();
+        // console.log('before desc:' + specsTotalDesc +";end;");
+        let specsDetailDesc  = specsTotalDesc.replace(specsTitleDesc,'');
+        specsDetailDesc = specsDetailDesc.trim();
+        // console.log('desc2:'+specsDetailDesc+";end;");
+
+        const purchaseInfoColumn = firstRow.find(".purchase-info .price");
+        let price = purchaseInfoColumn.text();
+        price = price.trim();
+
+        const mac = {imageURL:imageSrc, specsTitle: specsTitleDesc , specsDetail:specsDetailDesc, price};
+
+        newMacs.push(mac);
+        // console.log('price:', price);
+        // price.trim();
+        // console.log('price2:', price);
+
+                  // var href = $('a.collection-card-image', this).attr('href');
+                  // if (href.lastIndexOf('/') > 0) {
+                  //     console.log($('h3', this).text());
+                  // }
+      });
+
+      compareWithOldMacs(newMacs);
+
+      // let tables = document.querySelectorAll(".refurb-list .box-content table");
+      // for (const table of tables){
+      //   const firstRow = table.querySelector(".product");
+      //
+      //   const imageColumn = firstRow.querySelector(".image img");
+      //   const imageSrc = imageColumn.src;
+      //
+      //   const specsTotalColumn = firstRow.querySelector(".specs");
+      //   const specsTotalDesc = specsTotalColumn.innerText;
+      //
+      //   const purchaseInfoColumn = firstRow.querySelector(".purchase-info .price");
+      //   const price = purchaseInfoColumn.innerText;
+
+
+      // $('li.collection-card').each(function() {
+      //         var href = $('a.collection-card-image', this).attr('href');
+      //         if (href.lastIndexOf('/') > 0) {
+      //             console.log($('h3', this).text());
+      //         }
+      // });
+  });
+}
