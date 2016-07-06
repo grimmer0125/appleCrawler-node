@@ -27,12 +27,14 @@ function compareWithOldMacs(newMacs){
   }else {
     console.log('old macs:', macs)
 
-    console.log('not the same, new macs:', JSON.stringify(newMacs));
+    // console.log('not the same, new macs:', JSON.stringify(newMacs));
 
     macs = newMacs;
 
-    //broadcast by line id
+    // for testing for xxx's line
+    // sendBackMacInfoWhenAddingFriend('xxxx');
 
+    //broadcast by line id, need to recover when not testing
     getAlluserIDs(userList=>{
       console.log("allusers:",userList)
       broadcastUpdatedInfo(userList);
@@ -41,17 +43,28 @@ function compareWithOldMacs(newMacs){
 }
 // console.log('broadcast to:'+'userMid;' + JSON.stringify(nameList));
 
+function summaryInfoFromStoredMacs(){
+  let summaryStr = `蘋果特價品更新:`+'\n\n';
+  const numberOfMacs = macs.length;
+  for (let i =0; i<numberOfMacs; i++){
+    const mac = macs[i];
+    summaryStr += `${i+1}. ${mac.specsTitle}. ${mac.price} http://www.apple.com${mac.specsURL}`+'\n\n';
+  }
+  console.log('summary macs:', summaryStr);
+  return summaryStr;
+}
+
 function broadcastUpdatedInfo(userList){
-  const macInfoString = JSON.stringify(macs);
+  const macInfoString = summaryInfoFromStoredMacs();
   for (const user of userList){
-    console.log('broadcast to:'+ user.id +";info:"+macInfoString);
+    console.log('broadcast to:'+ user.id);
     client.sendText(user.id, macInfoString);
   }
 }
 
 function sendBackMacInfoWhenAddingFriend(userMid){
-  const macInfoString = JSON.stringify(macs);
-  console.log('send back to:'+ userMid +";info:"+macInfoString);
+  const macInfoString = summaryInfoFromStoredMacs();
+  console.log('send back to:'+ userMid);
   client.sendText(userMid, macInfoString);
 }
 
@@ -219,6 +232,10 @@ function grabAppleData(){
         const specsTitleColumn = firstRow.find(".specs h3");
         let specsTitleDesc = specsTitleColumn.text();
         specsTitleDesc  = specsTitleDesc.trim();
+
+        const specsURLColumn = firstRow.find(".specs h3 a");
+        let specsURL = specsURLColumn.attr('href');
+        console.log('url:', specsURL);
         // console.log('title desc:' + specsTitleDesc+";end;");
 
         const specsTotalColumn = firstRow.find(".specs");
@@ -232,7 +249,7 @@ function grabAppleData(){
         let price = purchaseInfoColumn.text();
         price = price.trim();
 
-        const mac = {imageURL:imageSrc, specsTitle: specsTitleDesc , specsDetail:specsDetailDesc, price};
+        const mac = {imageURL:imageSrc, specsURL, specsTitle: specsTitleDesc , specsDetail:specsDetailDesc, price};
 
         newMacs.push(mac);
 
