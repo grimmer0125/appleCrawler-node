@@ -1,6 +1,7 @@
 "use strict";
 
 require('newrelic');
+var pg = require('pg');
 var equal = require('deep-equal');
 // var Nightmare = require('nightmare');
 var cheerio = require('cheerio');
@@ -17,14 +18,6 @@ var client = LineBot.client({
   channelMID: 'u21e6de33e562aaa212082702d3957721'
 });
 
-// let ttt = '      fdasfljas    ';
-// ttt = ttt.trim();
-// console.log('ttt:',ttt);
-
-// var nameList = ['jhon','fill','vikash','jammy','tumblr','kamal'];
-// console.log(nameList.indexOf( 'kamal' )); // Print 5
-
-const midList = [];
 var macs = [];
 
 function compareWithOldMacs(newMacs){
@@ -39,16 +32,20 @@ function compareWithOldMacs(newMacs){
     macs = newMacs;
 
     //broadcast by line id
-    broadcastUpdatedInfo();
+
+    getAlluserIDs(userList=>{
+      console.log("allusers:",userList)
+      broadcastUpdatedInfo(userList);
+    });
   }
 }
 // console.log('broadcast to:'+'userMid;' + JSON.stringify(nameList));
 
-function broadcastUpdatedInfo(){
+function broadcastUpdatedInfo(userList){
   const macInfoString = JSON.stringify(macs);
-  for (const userMid of midList){
-    console.log('broadcast to:'+ userMid +";info:"+macInfoString);
-    client.sendText(userMid, macInfoString);
+  for (const user of userList){
+    console.log('broadcast to:'+ user.id +";info:"+macInfoString);
+    client.sendText(user.id, macInfoString);
   }
 }
 
@@ -73,9 +70,16 @@ app.post('/callback', function (req, res) {
 
     const clientMid = receive.getFromMid();
     console.log('remote user:', clientMid);
-    if( midList.indexOf(clientMid) < 0 ){
-      midList.push(clientMid);
+    // if( midList.indexOf(clientMid) < 0 ){
+    //   midList.push(clientMid);
+    // }
+
+    if(receive.isAddContact){
+      console.log('is adding contact');
+    }else {
+      console.log('is not adding contact');
     }
+    console.log('type:', receive.getResult().content.opType);
 
     if(receive.isMessage()){
 
@@ -148,6 +152,16 @@ app.post('/callback', function (req, res) {
       // shows that there are 3 cases, add as a friend, block, canceling block,
 
       // for add as a friend case. should handle excluding the other cases later.
+
+      if(receive.isAddContact){
+        console.log('is adding contact');
+      }else {
+        console.log('is not adding contact');
+      }
+
+      console.log('type:', receive.getResult().content.opType);
+
+      insertUserID(clientMid);
       sendBackMacInfoWhenAddingFriend(clientMid);
 
     }else {
@@ -165,82 +179,12 @@ app.listen(app.get('port'), function () {
   console.log('Listening on port ' + app.get('port'));
 });
 
-// below is crawler part
-// var nightmare = Nightmare({
-//   // openDevTools: false,
-//   // show: true
-// });
-//
-// function grabAppleData(){
-//   nightmare
-//     .goto('http://www.apple.com/tw/shop/browse/home/specialdeals/mac')
-//     .wait('.refurb-list')
-//     .evaluate(function () {
-//
-//       const newMacs = [];
-//
-//       let tables = document.querySelectorAll(".refurb-list .box-content table");
-//       for (const table of tables){
-//         const firstRow = table.querySelector(".product");
-//
-//         const imageColumn = firstRow.querySelector(".image img");
-//         const imageSrc = imageColumn.src;
-//
-//         const specsTotalColumn = firstRow.querySelector(".specs"); //how to remove title part ?
-//         const specsTotalDesc = specsTotalColumn.innerText;
-//         // const specsTitleColumn = firstRow.querySelector(".specs a");
-//         // const specsTitle = specsTitleColumn .innerText;
-//
-//         const purchaseInfoColumn = firstRow.querySelector(".purchase-info .price"); //multiple span?
-//         const price = purchaseInfoColumn.innerText;
-//
-//         const mac = {imageURL:imageSrc, specs:specsTotalDesc, price};
-//
-//         newMacs.push(mac);
-//       }
-//
-//       // here is in brwoser/window scope, can not access macs
-//
-//       return newMacs;
-//
-//     })
-//     // .end()
-//     .then(function (result) {
-//
-//       compareWithOldMacs(result);
-//
-//       // if(equal(result, macs)){
-//       //   console.log('same macs');
-//       // }else {
-//       //   console.log('old macs:', macs)
-//       //
-//       //   console.log('not the same, new macs:',result);
-//       //
-//       //   macs = result;
-//       //
-//       //   //broadcast by line id
-//       //   broadcastUpdatedInfo();
-//       // }
-//     })
-//     .catch(function (error) {
-//       console.error('Search failed:', error);
-//     });
-// }
-
-grabAppleData2();
+grabAppleData();
 
 setInterval(function(){
   console.log('start');
 
-  grabAppleData2();
-
-  // test2後的下一次出現test1 等超過10s !!!, even if interval = 5*1000
-  // var seconds = 10;
-  // var waitTill = new Date(new Date().getTime() + seconds * 1000);
-  // while(waitTill > new Date())
-  // {
-  //
-  // }
+  grabAppleData();
 
   console.log('end');
 }, 12 * 60* 1000); //15 min
@@ -249,52 +193,38 @@ process.on('SIGINT', function() {
   process.exit();
 });
 
-function grabAppleData2(){
+function grabAppleData(){
 
   request({
       method: 'GET',
       url: 'http://www.apple.com/tw/shop/browse/home/specialdeals/mac'
   }, function(err, response, body) {
-      if (err) return console.error(err);
-
-      // console.log('use cheerio 000 !!');
-
-      // Tell Cherrio to load the HTML
-      // $ = cheerio.load(body);
+      if (err) {
+        return console.error(err);
+      }
 
       var $ = cheerio.load(body);
-
-      // console.log('use cheerio !!');
 
       const newMacs = [];
 
       $('.refurb-list .box-content table').each(function(i, elem) {
 
-        // use this or elem to get this element, shoulbe be table object
-        // console.log('get something');
-
         const firstRow = $(this).find('.product');
 
-        // var firstRow = elem('.product');
         const imageColumn = firstRow.find(".image img");
         const imageSrc = imageColumn.attr('src');
-        // var imageSrc2 = imageColumn.data('src');
-        // console.log('image1:',imageSrc);
-        // console.log('image2:',imageSrc2);
 
         const specsTitleColumn = firstRow.find(".specs h3");
         let specsTitleDesc = specsTitleColumn.text();
         specsTitleDesc  = specsTitleDesc.trim();
         // console.log('title desc:' + specsTitleDesc+";end;");
-        // specsTotalDesc = specsTotalDesc.trim();
-        // console.log('desc2:'+specsTotalDesc+";end;");
 
         const specsTotalColumn = firstRow.find(".specs");
         let specsTotalDesc = specsTotalColumn.text();
         // console.log('before desc:' + specsTotalDesc +";end;");
         let specsDetailDesc  = specsTotalDesc.replace(specsTitleDesc,'');
         specsDetailDesc = specsDetailDesc.trim();
-        // console.log('desc2:'+specsDetailDesc+";end;");
+        // console.log('desc detail:'+specsDetailDesc+";end;");
 
         const purchaseInfoColumn = firstRow.find(".purchase-info .price");
         let price = purchaseInfoColumn.text();
@@ -303,37 +233,59 @@ function grabAppleData2(){
         const mac = {imageURL:imageSrc, specsTitle: specsTitleDesc , specsDetail:specsDetailDesc, price};
 
         newMacs.push(mac);
-        // console.log('price:', price);
-        // price.trim();
-        // console.log('price2:', price);
 
-                  // var href = $('a.collection-card-image', this).attr('href');
-                  // if (href.lastIndexOf('/') > 0) {
-                  //     console.log($('h3', this).text());
-                  // }
       });
 
       compareWithOldMacs(newMacs);
 
-      // let tables = document.querySelectorAll(".refurb-list .box-content table");
-      // for (const table of tables){
-      //   const firstRow = table.querySelector(".product");
-      //
-      //   const imageColumn = firstRow.querySelector(".image img");
-      //   const imageSrc = imageColumn.src;
-      //
-      //   const specsTotalColumn = firstRow.querySelector(".specs");
-      //   const specsTotalDesc = specsTotalColumn.innerText;
-      //
-      //   const purchaseInfoColumn = firstRow.querySelector(".purchase-info .price");
-      //   const price = purchaseInfoColumn.innerText;
+  });
+}
 
+console.log('pg_url:', process.env.DATABASE_URL);
 
-      // $('li.collection-card').each(function() {
-      //         var href = $('a.collection-card-image', this).attr('href');
-      //         if (href.lastIndexOf('/') > 0) {
-      //             console.log($('h3', this).text());
-      //         }
-      // });
+getAlluserIDs(s=>console.log("all user:",s));
+
+function getAlluserIDs(handler){
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+
+    if(err){
+      console.log('can not connect,',err);
+      return;
+    }
+
+    client.query('SELECT id FROM apple_table', function(err, result) {
+      if (err) {
+        console.error(err); //response.send("Error " + err);
+      } else {
+        if(result.rows.length>0){
+          console.log('first user:', result.rows[0]); // anonymous { id: 'abc' }?? node 6.x bug
+        }
+        // response.render('pages/db', {results: result.rows} );
+        handler(result.rows)
+      }
+    });
+  });
+}
+
+function insertUserID(userID){
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+
+    if(err){
+      console.log('can not connect,',err);
+      return;
+    }
+
+    // try insert
+    client.query(`INSERT INTO apple_table(id) VALUES('${userID}')`, function(err, result) {
+
+      if (err) {
+        console.error(err); //response.send("Error " + err);
+      } else {
+        console.log('insert ok');
+      }
+
+      done();
+
+    });
   });
 }

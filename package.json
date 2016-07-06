@@ -2,7 +2,7 @@
   "name": "applecrawler",
   "version": "1.0.0",
   "engines": {
-    "node": "6.2.2"
+    "node": "5.12.0"
   },
   "description": "use https://github.com/segmentio/nightmare to grab the content of http://www.apple.com/tw/shop/browse/home/specialdeals/mac, then use Line/Messenger to broadcast the information",
   "main": "index.js",
@@ -15,12 +15,13 @@
     "line-bot-sdk": "^0.1.4",
     "lodash": "^4.13.1",
     "newrelic": "^1.28.1",
+    "pg": "^6.0.1",
     "request": "^2.72.0",
     "superagent": "^2.0.0"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node index.js",
+    "start": "DATABASE_URL=postgres:///$(whoami) node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
