@@ -74,12 +74,13 @@ app.post('/callback', function (req, res) {
     //   midList.push(clientMid);
     // }
 
-    if(receive.isAddContact){
-      console.log('is adding contact');
-    }else {
-      console.log('is not adding contact');
-    }
-    console.log('type:', receive.getResult().content.opType);
+    // no data
+    // if(receive.isAddContact){
+    //   console.log('is adding contact');
+    // }else {
+    //   console.log('is not adding contact');
+    // }
+    // console.log('type:', receive.getResult().content.opType);
 
     if(receive.isMessage()){
 
@@ -153,13 +154,14 @@ app.post('/callback', function (req, res) {
 
       // for add as a friend case. should handle excluding the other cases later.
 
-      if(receive.isAddContact){
-        console.log('is adding contact');
-      }else {
-        console.log('is not adding contact');
-      }
-
-      console.log('type:', receive.getResult().content.opType);
+      // adding and block will both true , at least  for "line-bot-sdk": "^0.1.4"
+      // if(receive.isAddContact){
+      //   console.log('is adding contact');
+      // }else {
+      //   console.log('is not adding contact');
+      // }
+      //4 : add or unblock, 8:block
+      // console.log('type:', receive.getResult().content.opType);
 
       insertUserID(clientMid);
       sendBackMacInfoWhenAddingFriend(clientMid);
@@ -257,9 +259,9 @@ function getAlluserIDs(handler){
       if (err) {
         console.error(err); //response.send("Error " + err);
       } else {
-        if(result.rows.length>0){
-          console.log('first user:', result.rows[0]); // anonymous { id: 'abc' }?? node 6.x bug
-        }
+        // if(result.rows.length>0){
+        //   console.log('first user:', result.rows[0]); // anonymous { id: 'abc' }?? node 6.x bug
+        // }
         // response.render('pages/db', {results: result.rows} );
         handler(result.rows)
       }
