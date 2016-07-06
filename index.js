@@ -18,54 +18,72 @@ var client = LineBot.client({
   channelMID: 'u21e6de33e562aaa212082702d3957721'
 });
 
-var macs = [];
+// var macs = [];
 
 function compareWithOldMacs(newMacs){
 
-  if(equal(newMacs, macs)){
-    console.log('same macs');
-  }else {
-    console.log('old macs:', macs)
+  getAllappleInfo(macs=>{
+    if(equal(newMacs, macs)){
+      console.log('same macs');
+    }else {
+      console.log('old macs:', macs)
 
-    // console.log('not the same, new macs:', JSON.stringify(newMacs));
+      // console.log('not the same, new macs:', JSON.stringify(newMacs));
 
-    macs = newMacs;
+      //to udpate
+      udpateAppleInfo(newMacs);
 
-    // for testing for xxx's line
-    // sendBackMacInfoWhenAddingFriend('xxxx');
+      // for testing for xxx's line
+      // sendBackMacInfoWhenAddingFriend('xxxx');
 
-    //broadcast by line id, need to recover when not testing
-    getAlluserIDs(userList=>{
-      console.log("allusers:",userList)
-      broadcastUpdatedInfo(userList);
-    });
-  }
+      //broadcast by line id, need to recover when not testing
+      getAlluserIDs(userList=>{
+        // console.log("allusers:",userList)
+        broadcastUpdatedInfo(userList, newMacs);
+      });
+    }
+  });
 }
 // console.log('broadcast to:'+'userMid;' + JSON.stringify(nameList));
 
-function summaryInfoFromStoredMacs(){
-  let summaryStr = `蘋果特價品更新:`+'\n\n';
-  const numberOfMacs = macs.length;
-  for (let i =0; i<numberOfMacs; i++){
-    const mac = macs[i];
-    summaryStr += `${i+1}. ${mac.specsTitle}. ${mac.price} http://www.apple.com${mac.specsURL}`+'\n\n';
+function summaryInfoFromStoredMacs(linebackHandler, macs ){
+
+  const action = (macList)=>{
+    let summaryStr = `蘋果特價品更新:`+'\n\n';
+
+    const numberOfMacs = macList.length;
+    for (let i =0; i<numberOfMacs; i++){
+      const mac = macList[i];
+      summaryStr += `${i+1}. ${mac.specsTitle}. ${mac.price} http://www.apple.com${mac.specsURL}`+'\n\n';
+    }
+    console.log('new summary macs:', summaryStr);
+
+    linebackHandler(summaryStr);
+  };
+
+  if(macs === null){
+    getAllappleInfo(finalMacs=>{
+      action(finalMacs);
+    });
+  }else {
+    action(macs);
   }
-  console.log('summary macs:', summaryStr);
-  return summaryStr;
 }
 
-function broadcastUpdatedInfo(userList){
-  const macInfoString = summaryInfoFromStoredMacs();
-  for (const user of userList){
-    console.log('broadcast to:'+ user.id);
-    client.sendText(user.id, macInfoString);
-  }
+function broadcastUpdatedInfo(userList, newMacs){
+  summaryInfoFromStoredMacs(macInfoString=>{
+    for (const user of userList){
+      console.log('broadcast to:'+ user.id);
+      client.sendText(user.id, macInfoString);
+    }
+  }, newMacs);
 }
 
 function sendBackMacInfoWhenAddingFriend(userMid){
-  const macInfoString = summaryInfoFromStoredMacs();
-  console.log('send back to:'+ userMid);
-  client.sendText(userMid, macInfoString);
+  summaryInfoFromStoredMacs(macInfoString=>{
+    console.log('send back to:'+ userMid);
+    client.sendText(userMid, macInfoString);
+  }, null);
 }
 
 var app = express();
@@ -235,7 +253,7 @@ function grabAppleData(){
 
         const specsURLColumn = firstRow.find(".specs h3 a");
         let specsURL = specsURLColumn.attr('href');
-        console.log('url:', specsURL);
+        // console.log('url:', specsURL);
         // console.log('title desc:' + specsTitleDesc+";end;");
 
         const specsTotalColumn = firstRow.find(".specs");
@@ -262,7 +280,7 @@ function grabAppleData(){
 
 console.log('pg_url:', process.env.DATABASE_URL);
 
-getAlluserIDs(s=>console.log("all user:",s));
+// getAlluserIDs(s=>console.log("all user:",s));
 
 function getAlluserIDs(handler){
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
@@ -274,7 +292,7 @@ function getAlluserIDs(handler){
 
     client.query('SELECT id FROM user_table', function(err, result) {
       if (err) {
-        console.error(err); //response.send("Error " + err);
+        console.error('get all user id fail:'+err); //response.send("Error " + err);
       } else {
         // if(result.rows.length>0){
         //   console.log('first user:', result.rows[0]); // anonymous { id: 'abc' }?? node 6.x bug
@@ -282,6 +300,8 @@ function getAlluserIDs(handler){
         // response.render('pages/db', {results: result.rows} );
         handler(result.rows)
       }
+
+      done();
     });
   });
 }
@@ -295,16 +315,65 @@ function insertUserID(userID){
     }
 
     // try insert
+    //`` means string
     client.query(`INSERT INTO user_table(id) VALUES('${userID}')`, function(err, result) {
 
       if (err) {
-        console.error(err); //response.send("Error " + err);
+        console.error('insert user id fail:'+err); //response.send("Error " + err);
       } else {
         console.log('insert ok');
       }
 
       done();
 
+    });
+  });
+}
+
+function getAllappleInfo(handler){
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+
+    if(err){
+      console.log('can not connect,',err);
+      return;
+    }
+
+    client.query('SELECT product_info FROM special_product_table', function(err, result) {
+      if (err) {
+        console.error('get all apple info fail,'+err);
+      } else {
+
+        handler(result.rows)
+      }
+
+      done();
+    });
+  });
+}
+
+// udpateAppleInfo(); // for testing
+
+function udpateAppleInfo(info){
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+
+    if(err){
+      console.log('can not connect,',err);
+      return;
+    }
+
+    const infoJSONStr = JSON.stringify(info);
+
+    client.query(`UPDATE special_product_table SET product_info = '${infoJSONStr}'`, function(err, result) {
+
+    // client.query(`INSERT INTO special_product_table(product_info) VALUES('${testJsonStr}')`, function(err, result) {
+      if (err) {
+        console.error('update info fail:',err);
+      } else {
+        // console.log('update info ok');
+        // handler();
+      }
+
+      done();
     });
   });
 }
