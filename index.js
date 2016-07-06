@@ -347,8 +347,11 @@ function getAllappleInfo(handler){
       if (err) {
         console.error('get all apple info fail,'+err);
       } else {
-
-        handler(result.rows)
+        if(result.rows.length>0){
+          handler(result.rows[0])
+        } else {
+          handler([]);
+        }
       }
 
       done();
