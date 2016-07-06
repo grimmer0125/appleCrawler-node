@@ -272,7 +272,7 @@ function getAlluserIDs(handler){
       return;
     }
 
-    client.query('SELECT id FROM apple_table', function(err, result) {
+    client.query('SELECT id FROM user_table', function(err, result) {
       if (err) {
         console.error(err); //response.send("Error " + err);
       } else {
@@ -295,7 +295,7 @@ function insertUserID(userID){
     }
 
     // try insert
-    client.query(`INSERT INTO apple_table(id) VALUES('${userID}')`, function(err, result) {
+    client.query(`INSERT INTO user_table(id) VALUES('${userID}')`, function(err, result) {
 
       if (err) {
         console.error(err); //response.send("Error " + err);
