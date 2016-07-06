@@ -348,8 +348,11 @@ function getAllappleInfo(handler){
         console.error('get all apple info fail,'+err);
       } else {
         if(result.rows.length>0){
-          handler(result.rows[0])
+          console.log('DB have non empty apple info');
+          handler(result.rows[0].product_info)
         } else {
+          console.log('DB have no apple info');
+
           handler([]);
         }
       }
