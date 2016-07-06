@@ -31,7 +31,14 @@ function compareWithOldMacs(newMacs){
       // console.log('not the same, new macs:', JSON.stringify(newMacs));
 
       //to udpate
-      udpateAppleInfo(newMacs);
+      if(macs.length==0){
+        console.log('try to insert apple info');
+        insertAppleInfo(newMacs);
+        // need to insert
+      } else {
+        console.log('try to update apple info');
+        udpateAppleInfo(newMacs);
+      }
 
       // for testing for xxx's line
       // sendBackMacInfoWhenAddingFriend('xxxx');
@@ -365,9 +372,31 @@ function udpateAppleInfo(info){
 
     client.query(`UPDATE special_product_table SET product_info = '${infoJSONStr}'`, function(err, result) {
 
-    // client.query(`INSERT INTO special_product_table(product_info) VALUES('${testJsonStr}')`, function(err, result) {
       if (err) {
         console.error('update info fail:',err);
+      } else {
+        // console.log('update info ok');
+        // handler();
+      }
+
+      done();
+    });
+  });
+}
+
+function insertAppleInfo(info){
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+
+    if(err){
+      console.log('can not connect,',err);
+      return;
+    }
+
+    const infoJSONStr = JSON.stringify(info);
+
+    client.query(`INSERT INTO special_product_table(product_info) VALUES('${infoJSONStr}')`, function(err, result) {
+      if (err) {
+        console.error('insert info fail:',err);
       } else {
         // console.log('update info ok');
         // handler();
