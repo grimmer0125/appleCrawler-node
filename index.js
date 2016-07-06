@@ -24,11 +24,9 @@ function compareWithOldMacs(newMacs){
 
   getAllappleInfo(macs=>{
     if(equal(newMacs, macs)){
-      console.log('same macs');
+      console.log('same macs:', macs);
     }else {
       console.log('old macs:', macs)
-
-      // console.log('not the same, new macs:', JSON.stringify(newMacs));
 
       //to udpate
       if(macs.length==0){
