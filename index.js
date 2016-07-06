@@ -24,7 +24,7 @@ function compareWithOldMacs(newMacs){
 
   getAllappleInfo(macs=>{
     if(equal(newMacs, macs)){
-      console.log('same macs:', macs);
+      console.log('same macs');
     }else {
       console.log('old macs:', macs)
 
@@ -59,7 +59,11 @@ function summaryInfoFromStoredMacs(linebackHandler, macs ){
     const numberOfMacs = macList.length;
     for (let i =0; i<numberOfMacs; i++){
       const mac = macList[i];
-      summaryStr += `${i+1}. ${mac.specsTitle}. ${mac.price} http://www.apple.com${mac.specsURL}`+'\n\n';
+      if(i == (numberOfMacs - 1)){
+        summaryStr += `${i+1}. ${mac.specsTitle}. ${mac.price} http://www.apple.com${mac.specsURL}`;
+      }else {
+        summaryStr += `${i+1}. ${mac.specsTitle}. ${mac.price} http://www.apple.com${mac.specsURL}`+'\n\n';
+      }
     }
     console.log('new summary macs:', summaryStr);
 
@@ -348,7 +352,7 @@ function getAllappleInfo(handler){
         console.error('get all apple info fail,'+err);
       } else {
         if(result.rows.length>0){
-          console.log('DB have non empty apple info');
+          // console.log('DB have non empty apple info');
           handler(result.rows[0].product_info)
         } else {
           console.log('DB have no apple info');
