@@ -1,7 +1,6 @@
 "use strict";
 
 require('newrelic');
-var pg = require('pg');
 var equal = require('deep-equal');
 // var Nightmare = require('nightmare');
 var cheerio = require('cheerio');
@@ -18,11 +17,11 @@ var client = LineBot.client({
   channelMID: 'u21e6de33e562aaa212082702d3957721'
 });
 
-// var macs = [];
+var db = require('./lib/db');
 
 function compareWithOldMacs(newMacs){
 
-  getAllappleInfo(macs=>{
+  db.getAllappleInfo(macs=>{
     if(equal(newMacs, macs)){
       console.log('same macs');
     }else {
@@ -31,18 +30,17 @@ function compareWithOldMacs(newMacs){
       //to udpate
       if(macs.length==0){
         console.log('try to insert apple info');
-        insertAppleInfo(newMacs);
-        // need to insert
+        db.insertAppleInfo(newMacs);
       } else {
         console.log('try to update apple info');
-        udpateAppleInfo(newMacs);
+        db.updateAppleInfo(newMacs);
       }
 
       // for testing for xxx's line
       // sendBackMacInfoWhenAddingFriend('xxxx');
 
       //broadcast by line id, need to recover when not testing
-      getAlluserIDs(userList=>{
+      db.getAlluserIDs(userList=>{
         // console.log("allusers:",userList)
         broadcastUpdatedInfo(userList, newMacs);
       });
@@ -71,7 +69,7 @@ function summaryInfoFromStoredMacs(linebackHandler, macs ){
   };
 
   if(macs === null){
-    getAllappleInfo(finalMacs=>{
+    db.getAllappleInfo(finalMacs=>{
       action(finalMacs);
     });
   }else {
@@ -203,7 +201,7 @@ app.post('/callback', function (req, res) {
       //4 : add or unblock, 8:block
       // console.log('type:', receive.getResult().content.opType);
 
-      insertUserID(clientMid);
+      db.insertUserID(clientMid);
       sendBackMacInfoWhenAddingFriend(clientMid);
 
     }else {
@@ -284,133 +282,5 @@ function grabAppleData(){
 
       compareWithOldMacs(newMacs);
 
-  });
-}
-
-console.log('pg_url:', process.env.DATABASE_URL);
-
-// getAlluserIDs(s=>console.log("all user:",s));
-
-function getAlluserIDs(handler){
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-
-    if(err){
-      console.log('can not connect,',err);
-      return;
-    }
-
-    client.query('SELECT id FROM user_table', function(err, result) {
-      if (err) {
-        console.error('get all user id fail:'+err); //response.send("Error " + err);
-      } else {
-        // if(result.rows.length>0){
-        //   console.log('first user:', result.rows[0]); // anonymous { id: 'abc' }?? node 6.x bug
-        // }
-        // response.render('pages/db', {results: result.rows} );
-        handler(result.rows)
-      }
-
-      done();
-    });
-  });
-}
-
-function insertUserID(userID){
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-
-    if(err){
-      console.log('can not connect,',err);
-      return;
-    }
-
-    // try insert
-    //`` means string
-    client.query(`INSERT INTO user_table(id) VALUES('${userID}')`, function(err, result) {
-
-      if (err) {
-        console.error('insert user id fail:'+err); //response.send("Error " + err);
-      } else {
-        console.log('insert ok');
-      }
-
-      done();
-
-    });
-  });
-}
-
-function getAllappleInfo(handler){
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-
-    if(err){
-      console.log('can not connect,',err);
-      return;
-    }
-
-    client.query('SELECT product_info FROM special_product_table', function(err, result) {
-      if (err) {
-        console.error('get all apple info fail,'+err);
-      } else {
-        if(result.rows.length>0){
-          // console.log('DB have non empty apple info');
-          handler(result.rows[0].product_info)
-        } else {
-          console.log('DB have no apple info');
-
-          handler([]);
-        }
-      }
-
-      done();
-    });
-  });
-}
-
-// udpateAppleInfo(); // for testing
-
-function udpateAppleInfo(info){
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-
-    if(err){
-      console.log('can not connect,',err);
-      return;
-    }
-
-    const infoJSONStr = JSON.stringify(info);
-
-    client.query(`UPDATE special_product_table SET product_info = '${infoJSONStr}'`, function(err, result) {
-
-      if (err) {
-        console.error('update info fail:',err);
-      } else {
-        // console.log('update info ok');
-        // handler();
-      }
-
-      done();
-    });
-  });
-}
-
-function insertAppleInfo(info){
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-
-    if(err){
-      console.log('can not connect,',err);
-      return;
-    }
-
-    const infoJSONStr = JSON.stringify(info);
-
-    client.query(`INSERT INTO special_product_table(product_info) VALUES('${infoJSONStr}')`, function(err, result) {
-      if (err) {
-        console.error('insert info fail:',err);
-      } else {
-        // console.log('update info ok');
-        // handler();
-      }
-
-      done();
-    });
   });
 }
