@@ -16,8 +16,7 @@
     "lodash": "^4.13.1",
     "newrelic": "^1.28.1",
     "pg": "^6.0.1",
-    "request": "^2.72.0",
-    "superagent": "^2.0.0"
+    "request": "^2.72.0"
   },
   "devDependencies": {},
   "scripts": {
