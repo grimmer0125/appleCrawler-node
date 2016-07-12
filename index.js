@@ -1,6 +1,11 @@
 'use strict';
 
 require('newrelic');
+
+const moment = require('moment');
+
+console.log('current hour in gmt+8:', moment().utcOffset(8).hours());
+
 const equal = require('deep-equal');
 // var Nightmare = require('nightmare');
 const cheerio = require('cheerio');
@@ -200,7 +205,10 @@ grabAppleData();
 setInterval(function () {
   console.log('timer start');
 
-  grabAppleData();
+  const currentHour = moment().utcOffset(8).hours();
+  if (currentHour >= 8) {
+    grabAppleData();
+  }
 
   console.log('timer end');
 }, 12 * 60 * 1000); // 15 min
