@@ -1,15 +1,10 @@
 'use strict';
 
 require('newrelic');
-
 const moment = require('moment');
-
-console.log('current hour in gmt+8:', moment().utcOffset(8).hours());
-
 const equal = require('deep-equal');
-// var Nightmare = require('nightmare');
-const cheerio = require('cheerio');
-const request = require('request');
+const db = require('./lib/db');
+const crawler = require('./lib/crawler');
 
 const _ = require('lodash');
 const bodyParser = require('body-parser');
@@ -21,8 +16,6 @@ const client = LineBot.client({
   channelSecret: 'ef0e7b0d4396b8a410ee0a04a5bdbf9d',
   channelMID: 'u21e6de33e562aaa212082702d3957721',
 });
-
-const db = require('./lib/db');
 
 function compareWithOldMacs(newMacs) {
   db.getAllappleInfo(macs => {
@@ -200,67 +193,19 @@ app.listen(app.get('port'), function () {
   console.log('Listening on port ' + app.get('port'));
 });
 
-grabAppleData();
+crawler.grabAppleData(compareWithOldMacs);
 
 setInterval(function () {
   console.log('timer start');
 
   const currentHour = moment().utcOffset(8).hours();
   if (currentHour >= 8) {
-    grabAppleData();
+    crawler.grabAppleData(compareWithOldMacs);
   }
 
   console.log('timer end');
 }, 12 * 60 * 1000); // 15 min
 
-function grabAppleData() {
-  request({
-    method: 'GET',
-    url: 'http://www.apple.com/tw/shop/browse/home/specialdeals/mac',
-  }, function (err, response, body) {
-    if (err) {
-      return console.error(err);
-    }
-
-    const $ = cheerio.load(body);
-
-    const newMacs = [];
-
-    $('.refurb-list .box-content table').each(function (i, elem) {
-      const firstRow = $(this).find('.product');
-
-      const imageColumn = firstRow.find('.image img');
-      const imageSrc = imageColumn.attr('src');
-
-      const specsTitleColumn = firstRow.find('.specs h3');
-      let specsTitleDesc = specsTitleColumn.text();
-      specsTitleDesc = specsTitleDesc.trim();
-
-      const specsURLColumn = firstRow.find('.specs h3 a');
-      const specsURL = specsURLColumn.attr('href');
-        // console.log('url:', specsURL);
-        // console.log('title desc:' + specsTitleDesc+";end;");
-
-      const specsTotalColumn = firstRow.find('.specs');
-      const specsTotalDesc = specsTotalColumn.text();
-        // console.log('before desc:' + specsTotalDesc +";end;");
-      let specsDetailDesc = specsTotalDesc.replace(specsTitleDesc, '');
-      specsDetailDesc = specsDetailDesc.trim();
-        // console.log('desc detail:'+specsDetailDesc+";end;");
-
-      const purchaseInfoColumn = firstRow.find('.purchase-info .price');
-      let price = purchaseInfoColumn.text();
-      price = price.trim();
-
-      const mac = { imageURL: imageSrc, specsURL, specsTitle: specsTitleDesc,
-        specsDetail: specsDetailDesc, price };
-
-      newMacs.push(mac);
-    });
-
-    compareWithOldMacs(newMacs);
-  });
-}
 
 process.on('SIGINT', function () {
   process.exit();
