@@ -1,6 +1,13 @@
 'use strict';
 
 require('newrelic');
+
+// require the Twilio module and create a REST client
+// Twilio Credentials
+const accountSid = 'AC83651bf8e21c30b313a44ccb97db3688';
+const authToken = 'ee7f411bf34d3424bc8cd4c934193079';
+const twilioClient = require('twilio')(accountSid, authToken);
+
 const moment = require('moment');
 const equal = require('deep-equal');
 const db = require('./lib/db');
@@ -16,6 +23,16 @@ const client = LineBot.client({
   channelSecret: 'ef0e7b0d4396b8a410ee0a04a5bdbf9d',
   channelMID: 'u21e6de33e562aaa212082702d3957721',
 });
+
+function sendLineBotAlert(){
+  twilioClient.messages.create({
+    to: '+886963052251',
+  	from: "+12016279052",
+    body: 'Line bot has problems !!',
+  }, function(err, message) {
+  	console.log(message.sid);
+  });
+}
 
 function compareWithOldMacs(newMacs) {
   db.getAllappleInfo(macs => {
@@ -38,6 +55,9 @@ function compareWithOldMacs(newMacs) {
 
       // broadcast by line id, need to recover when not testing
       db.getAlluserIDs(userList => {
+        if (userList.length >= 500) {
+          sendLineBotAlert();
+        }
         // console.log("allusers:",userList)
         broadcastUpdatedInfo(userList, newMacs);
       });
