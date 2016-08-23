@@ -9,7 +9,38 @@ Use "request" + "cheerio" to grab the content of http://www.apple.com/tw/shop/br
 1. (optional) Install the latest version of Node.js from https://nodejs.org/en/
 2. Go to the project root folder.
 3. Type "npm install" to install npm dependencies.
-4. Run "npm start" to launch the application.
+4. Change the enviornment PORT to what you want. This is the server's port and default is 5000.
+4. Setup credentials for Line Bot. Also you need to fill your server's Domain name to Line Developer Center so that your Line BOT can receive messages. Otherwise this Line bot only can send. It means your Local server/developement always can send messanges only. (Line server can not reach localhost) 
+5. (Optional) Setup credentials forTwilio.
+6. Run "npm start" to launch the application.
+
+## Fill the credentials of Line Bot API
+
+~~~ javascript
+const client = LineBot.client({
+  channelID: '<your channel ID>',
+  channelSecret: '<your channel secret>',
+  channelMID: '<your channel MID>'
+});
+~~~
+
+## (Optional) Fill the credentials of Twilio API (when reaching the maximal number of the friends of Line Bot, send the alarm)
+
+~~~ javascript
+const accountSid = 'Twilio Account SID';
+const authToken = 'Twilio API Token';
+const twilioClient = require('twilio')(accountSid, authToken);
+
+twilioClient.messages.create({
+    to: 'your phone number',
+    from: 'your Twilio number',
+    body: 'Line bot has problems !!',
+  }, function (err, message) {
+    console.log(message.sid);
+  });
+~~~  
+
+##
 
 ## License
 
