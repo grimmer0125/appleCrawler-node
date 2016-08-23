@@ -4,8 +4,8 @@ require('newrelic');
 
 // require the Twilio module and create a REST client
 // Twilio Credentials
-const accountSid = 'AC83651bf8e21c30b313a44ccb97db3688';
-const authToken = 'ee7f411bf34d3424bc8cd4c934193079';
+const accountSid = '';
+const authToken = '';
 const twilioClient = require('twilio')(accountSid, authToken);
 
 const moment = require('moment');
@@ -19,18 +19,18 @@ const express = require('express');
 // var request = require('superagent');
 const LineBot = require('line-bot-sdk');
 const client = LineBot.client({
-  channelID: '1472984528',
-  channelSecret: 'ef0e7b0d4396b8a410ee0a04a5bdbf9d',
-  channelMID: 'u21e6de33e562aaa212082702d3957721',
+  channelID: '',
+  channelSecret: '',
+  channelMID: '',
 });
 
-function sendLineBotAlert(){
+function sendLineBotAlert() {
   twilioClient.messages.create({
-    to: '+886963052251',
-  	from: "+12016279052",
+    to: '',
+    from: '',
     body: 'Line bot has problems !!',
-  }, function(err, message) {
-  	console.log(message.sid);
+  }, function (err, message) {
+    console.log(message.sid);
   });
 }
 
