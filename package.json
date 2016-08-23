@@ -4,13 +4,12 @@
   "engines": {
     "node": "5.12.0"
   },
-  "description": "use https://github.com/segmentio/nightmare to grab the content of http://www.apple.com/tw/shop/browse/home/specialdeals/mac, then use Line/Messenger to broadcast the information",
+  "description": "Use request + cheerio to grab the content of http://www.apple.com/tw/shop/browse/home/specialdeals/mac, then use Line to broadcast the information.",
   "main": "index.js",
   "dependencies": {
     "body-parser": "^1.15.2",
     "cheerio": "^0.20.0",
     "deep-equal": "^1.0.1",
-    "ejs": "^2.4.2",
     "express": "^4.14.0",
     "line-bot-sdk": "^0.1.4",
     "lodash": "^4.13.1",
