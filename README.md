@@ -50,4 +50,4 @@ twilioClient.messages.create({
 
 ## License
 
-appleCrawler-node is released under the Apache 2.0 license. It may be changed to MIT once the package "request" is replaced by other packages (e.g. fetch).  
+appleCrawler-node is released under the Apache 2.0 license.
