@@ -10,3 +10,7 @@ Use "request" + "cheerio" to grab the content of http://www.apple.com/tw/shop/br
 2. Go to the project root folder.
 3. Type "npm install" to install npm dependencies.
 4. Run "npm start" to launch the application.
+
+## License
+
+appleCrawler-node is released under the Apache 2.0 license. It may be changed to MIT once the package "request" is replaced by other packages (e.g. fetch).  
